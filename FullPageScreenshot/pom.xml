@@ -3,7 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.fullpagescreenshot</groupId>
 	<artifactId>FullPageScreenshot</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
+	<developers>
+		<developer>
+			<name>Anil Gopakumar</name>
+			<email>anil.since.1990@gmail.com</email>
+		</developer>
+	</developers>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
@@ -19,9 +25,9 @@
 	</build>
 	<dependencies>
 		<dependency>
-  <groupId>org.seleniumhq.selenium</groupId>
-  <artifactId>selenium-server-standalone</artifactId>
-  <version>2.41.0</version>
-</dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-server-standalone</artifactId>
+			<version>2.41.0</version>
+		</dependency>
 	</dependencies>
 </project>
