@@ -35,6 +35,7 @@ public class FullPageScreenshot {
 		long pageWidth					= (long)((JavascriptExecutor)driver).executeScript("return document.body.clientWidth");
 		long viewportHeight 			= (long)((JavascriptExecutor)driver).executeScript("return window.innerHeight");
 		BufferedImage stitchedImage 	= new BufferedImage((int)pageWidth, (int)pageHeight, BufferedImage.TYPE_INT_RGB);
+		long windowYOffset = 0;
 		int screens;
 		String jsForFetchingAbsoluteElements = 
 				"function getStylesWithPositionFixed(style, value) {"+
@@ -63,7 +64,9 @@ public class FullPageScreenshot {
 
 		for(screens = 0; screens <= pageHeight / viewportHeight ; screens ++) {
 			graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 0, (int) (screens * viewportHeight), null);
-			((JavascriptExecutor)driver).executeScript("window.scrollBy(0,"+viewportHeight+");");			
+			windowYOffset = (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset");
+			((JavascriptExecutor)driver).executeScript("window.scrollBy(0,"+viewportHeight+");");
+			while(windowYOffset == (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset")) Thread.sleep(1000); 
 		}
 		if(screens != 1)
 			graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 

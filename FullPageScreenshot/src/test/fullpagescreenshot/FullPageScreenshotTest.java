@@ -17,7 +17,7 @@ public class FullPageScreenshotTest {
 
 		System.setProperty("webdriver.chrome.driver", "C:\\Chrome\\chromedriver.exe");
 		WebDriver driver = new ChromeDriver();
-		driver.get("http://ssod-qa.intra.searshc.com/ssod/login.jsp");
+		driver.get("http://www.sears.com/");
 		driver.manage().window().maximize();
 
 		try {
