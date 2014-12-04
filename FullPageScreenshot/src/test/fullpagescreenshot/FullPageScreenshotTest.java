@@ -17,12 +17,12 @@ public class FullPageScreenshotTest {
 
 		System.setProperty("webdriver.chrome.driver", "C:\\Chrome\\chromedriver.exe");
 		WebDriver driver = new ChromeDriver();
-		driver.get("https://sywr-qa1.qa.ch3.s.com/mktCenter/login");
+		driver.get("http://ssod-qa.intra.searshc.com/ssod/login.jsp");
 		driver.manage().window().maximize();
 
 		try {
 			ImageIO.write(FullPageScreenshot.getStitchedScreenshot(driver), "jpg", new File("C://screenshot//stitched_final.jpg"));
-		} catch (WebDriverException | IOException e) {
+		} catch (WebDriverException | IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 		driver.quit();

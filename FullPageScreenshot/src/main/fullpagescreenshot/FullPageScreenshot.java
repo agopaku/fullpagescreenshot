@@ -26,14 +26,16 @@ public class FullPageScreenshot {
 	 * @return the full page screenshot of the webpage that is tested using the driver object 
 	 * @throws WebDriverException
 	 * @throws IOException
+	 * @throws InterruptedException 
 	 */
 	@SuppressWarnings("unchecked")
-	public static BufferedImage getStitchedScreenshot(WebDriver driver) throws WebDriverException, IOException {
+	public static BufferedImage getStitchedScreenshot(WebDriver driver) throws WebDriverException, IOException, InterruptedException {
 
 		long pageHeight 				= (long)((JavascriptExecutor)driver).executeScript("return document.body.clientHeight");;
 		long pageWidth					= (long)((JavascriptExecutor)driver).executeScript("return document.body.clientWidth");
 		long viewportHeight 			= (long)((JavascriptExecutor)driver).executeScript("return window.innerHeight");
 		BufferedImage stitchedImage 	= new BufferedImage((int)pageWidth, (int)pageHeight, BufferedImage.TYPE_INT_RGB);
+		int screens;
 		String jsForFetchingAbsoluteElements = 
 				"function getStylesWithPositionFixed(style, value) {"+
 						"var listOfFixedPositions = [];"+
@@ -56,17 +58,18 @@ public class FullPageScreenshot {
 				((JavascriptExecutor)driver).executeScript("return arguments[0].setAttribute('style', arguments[1]);",absoluteWebElement,existingStyle);	
 			}
 		}
-		
+
 		Graphics graphicsObject = stitchedImage.getGraphics();
 
-		for(int screens = 0; screens <= pageHeight / viewportHeight ; screens ++) {
+		for(screens = 0; screens <= pageHeight / viewportHeight ; screens ++) {
 			graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 0, (int) (screens * viewportHeight), null);
-			((JavascriptExecutor)driver).executeScript("window.scrollBy(0,"+viewportHeight+");");
+			((JavascriptExecutor)driver).executeScript("window.scrollBy(0,"+viewportHeight+");");			
 		}
-		graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 
-				0, (int) (pageHeight - pageHeight % viewportHeight), (int)pageWidth, (int)pageHeight, 
-				0, (int) (viewportHeight - pageHeight % viewportHeight), (int)pageWidth, (int)viewportHeight 
-				, null);
+		if(screens != 1)
+			graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 
+					0, (int) (pageHeight - pageHeight % viewportHeight), (int)pageWidth, (int)pageHeight, 
+					0, (int) (viewportHeight - pageHeight % viewportHeight), (int)pageWidth, (int)viewportHeight, 
+					null);
 		graphicsObject.dispose();		
 		return stitchedImage;
 	}
