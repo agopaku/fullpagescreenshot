@@ -28,15 +28,29 @@ public class FullPageScreenshot {
 	 * @throws IOException
 	 * @throws InterruptedException 
 	 */
+	/**
+	 * @param driver
+	 * @return
+	 * @throws WebDriverException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	@SuppressWarnings("unchecked")
 	public static BufferedImage getStitchedScreenshot(WebDriver driver) throws WebDriverException, IOException, InterruptedException {
 
-		long pageHeight 				= (long)((JavascriptExecutor)driver).executeScript("return document.body.clientHeight");;
+		long pageHeight 				= (long)((JavascriptExecutor)driver).executeScript("return document.body.clientHeight");
 		long pageWidth					= (long)((JavascriptExecutor)driver).executeScript("return document.body.clientWidth");
 		long viewportHeight 			= (long)((JavascriptExecutor)driver).executeScript("return window.innerHeight");
 		BufferedImage stitchedImage 	= new BufferedImage((int)pageWidth, (int)pageHeight, BufferedImage.TYPE_INT_RGB);
 		long windowYOffset = 0;
 		int screens;
+		
+		/***************************************************************************************************************************************************************	
+		 * The following code is used to fetch all the css style files present in the current HTML page
+		 * This is to find all the elements with the style 'position: absolute'
+		 * We replace all those styles with 'position: fixed', so that in the final screenshot, the overlays in the site will not be present repeatedly in all the pages
+		 ***************************************************************************************************************************************************************/
+ 
 		String jsForFetchingAbsoluteElements = 
 				"function getStylesWithPositionFixed(style, value) {"+
 						"var listOfFixedPositions = [];"+
@@ -61,13 +75,45 @@ public class FullPageScreenshot {
 		}
 
 		Graphics graphicsObject = stitchedImage.getGraphics();
+		
+		/***************************************************************************************************************************************************************	
+		 * The following code is used to scroll to the bottom portion of the screen, so that, if the page consists of any lazy loads, this will be added to the 
+		 * stitched screenshot
+		 ***************************************************************************************************************************************************************/
+		
+		for(int countOfWaitsForLazyLoad = 0; countOfWaitsForLazyLoad < 10;) {
+			windowYOffset = (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset");
+			((JavascriptExecutor)driver).executeScript("window.scrollTo(0,"+pageHeight+");");
+			for(int waitForScrollToHappen = 10; windowYOffset == (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset") 
+					&& waitForScrollToHappen > 0; waitForScrollToHappen--) Thread.sleep(1000);
+			if((pageHeight = pageHeight < (long)((JavascriptExecutor)driver).executeScript("return document.body.clientHeight") ? 
+					(long)((JavascriptExecutor)driver).executeScript("return document.body.clientHeight") : pageHeight)
+					== pageHeight) 
+				countOfWaitsForLazyLoad ++;				
+			else
+				countOfWaitsForLazyLoad = 0;				
+		}
+		
+		/***************************************************************************************************************************************************************	
+		 * The following code is used to capture the screenshot of each screen. It captures the screenshot, uses js to scroll to the next screen
+		 * and validates whether the scroll to the next screen has worked using the window.pageYOffset command. If the scroll did not work, it will wait for a second 
+		 * and check again. It waits for a max of 10 seconds.
+		 * For the last screen, if the complete view port size is not present, there will be a portion of the screen, which was there in the previous screen. 
+		 * Initially, this will also be added to the stitched screenshot
+		 ***************************************************************************************************************************************************************/
 
 		for(screens = 0; screens <= pageHeight / viewportHeight ; screens ++) {
 			graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 0, (int) (screens * viewportHeight), null);
 			windowYOffset = (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset");
 			((JavascriptExecutor)driver).executeScript("window.scrollBy(0,"+viewportHeight+");");
-			while(windowYOffset == (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset")) Thread.sleep(1000); 
+			for(int waitForScrollToHappen = 10; windowYOffset == (long)((JavascriptExecutor)driver).executeScript("return window.pageYOffset") 
+					&& waitForScrollToHappen > 0; waitForScrollToHappen--) Thread.sleep(1000); 
 		}
+		
+		/***************************************************************************************************************************************************************
+		 * The following code is used to get the bottom part of the last screen, which was left out while stitching. Adding this to the already stitched image will 
+		 * render the final image
+		 **************************************************************************************************************************************************************/
 		if(screens != 1)
 			graphicsObject.drawImage(ImageIO.read(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)), 
 					0, (int) (pageHeight - pageHeight % viewportHeight), (int)pageWidth, (int)pageHeight, 
