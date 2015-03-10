@@ -93,6 +93,8 @@ public class FullPageScreenshot {
 			else
 				countOfWaitsForLazyLoad = 0;				
 		}
+		((JavascriptExecutor)driver).executeScript("window.scrollBy(0,0);");
+		
 		
 		/***************************************************************************************************************************************************************	
 		 * The following code is used to capture the screenshot of each screen. It captures the screenshot, uses js to scroll to the next screen
